@@ -1,11 +1,17 @@
 import type React from "react";
+import { BrowserRouter, Routes, Route } from "react-router";
+import { Toaster } from "sonner";
+import Home from "./pages/Home";
 
 const App: React.FC = () => {
   return (
-    <div>
-      <h1>Hello World!</h1>
-    </div>
+    <BrowserRouter>
+      <Toaster position="bottom-left" theme="dark" richColors />
+      <Routes>
+        <Route path="/" element={<Home />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
-export default App
+export default App;

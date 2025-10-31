@@ -1,7 +1,7 @@
 import GraphQLService from "./graphql.service";
 
 class AuthService extends GraphQLService {
-  public async login(email: string, password: string): Promise<string> {
+  public async login(identifier: string, password: string): Promise<string> {
     const mutation: string = `
       mutation Login($input: LoginInput!) {
         login(input: $input)
@@ -10,7 +10,7 @@ class AuthService extends GraphQLService {
 
     const variables = {
       input: {
-        email,
+        identifier,
         password
       }
     }

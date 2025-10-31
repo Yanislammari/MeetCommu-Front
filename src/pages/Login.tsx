@@ -8,23 +8,24 @@ import { useNavigate, type NavigateFunction } from "react-router";
 const Login: React.FC = () => {
   const authService: AuthService = new AuthService();
   const navigate: NavigateFunction = useNavigate();
-  const [email, setEmail] = useState<string>("");
+  const [identifier, setIdentifier] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const emailPattern: RegExp = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
   const passwordPattern: RegExp = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-  const verifyEmailErrorMessage: string = "Please enter a valid email address.";
+  const usernamePattern: RegExp = /^[A-Za-z0-9_.-]{2,}$/;
+  const verifyIdentifierErrorMessage: string = "Please enter a valid email address or username.";
   const verifyPasswordErrorMessage: string = "Password must contain at least 8 characters, one uppercase letter, one lowercase letter, one number, and one special character.";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!email || !password) {
+    if (!identifier || !password) {
       toast.error("Please fill in both email and password fields.");
       return;
     }
 
-    if (!emailPattern.test(email)) {
-      toast.error(verifyEmailErrorMessage);
+    if (!emailPattern.test(identifier) && !usernamePattern.test(identifier)) {
+      toast.error(verifyIdentifierErrorMessage);
       return;
     }
 
@@ -34,7 +35,7 @@ const Login: React.FC = () => {
     }
 
     try {
-      const token: string = await authService.login(email, password);
+      const token: string = await authService.login(identifier, password);
 
       if (!token) {
         toast.error("The login did not return a valid token.")
@@ -49,6 +50,10 @@ const Login: React.FC = () => {
       switch (error.message) {
         case "INVALID_EMAIL_CREDENTIALS": {
           toast.error("No account found with this email.");
+          break;
+        }
+        case "INVALID_USERNAME_CREDENTIALS": {
+          toast.error("No account found for this username.");
           break;
         }
         case "INVALID_PASSWORD_CREDENTIALS": {
@@ -75,8 +80,8 @@ const Login: React.FC = () => {
           <p className="text-sm md:text-base mb-8 opacity-80 text-center md:text-left">Welcome back! Please enter your credentials to access your account.</p>
           <form className="flex flex-col gap-5">
             <div className="flex flex-col gap-2">
-              <label htmlFor="email" className="text-sm font-medium opacity-90">Email</label>
-              <input id="email" type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} pattern={emailPattern.source} title={verifyEmailErrorMessage} required className="bg-white/20 border border-white/30 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#9b8af7] placeholder-gray-300 text-white"/>
+              <label htmlFor="identifier" className="text-sm font-medium opacity-90">Email or Username</label>
+              <input id="identifier" type="text" placeholder="you@example.com or john_doe" value={identifier} onChange={(e) => setIdentifier(e.target.value)} pattern={emailPattern.source} title={verifyIdentifierErrorMessage} required className="bg-white/20 border border-white/30 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#9b8af7] placeholder-gray-300 text-white"/>
             </div>
             <div className="flex flex-col gap-2">
               <label htmlFor="password" className="text-sm font-medium opacity-90">Password</label>

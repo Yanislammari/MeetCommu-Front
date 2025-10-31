@@ -5,14 +5,14 @@ abstract class GraphQLService {
     this.endpoint = `${import.meta.env.VITE_BASE_URL}/graphql`;
   }
 
-  public async request<T>(query: string, variables?: Record<string, any>, token?: string): Promise<T> {
+  public async request<T>(query: string, variables?: Record<string, any>, token?: string, formData?: FormData): Promise<T> {
     const response: Response = await fetch(this.endpoint, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
+        ...(formData ? {} : { "Content-Type": "application/json" }),
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
-      body: JSON.stringify({
+      body: formData ? formData : JSON.stringify({
         query,
         variables
       })

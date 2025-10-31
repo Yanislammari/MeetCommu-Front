@@ -13,7 +13,7 @@ const Home: React.FC = () => {
           <p className="text-sm md:text-base mb-8 opacity-80 text-center md:text-left">Connect to join vast community spaces, sharing your passions.</p>
           <div className="flex flex-col gap-4">
             <button onClick={() => navigate("/login")} className="bg-[#4F46E5] hover:bg-[#4338CA] transition-all py-2.5 rounded-lg font-medium w-full cursor-pointer"><p>Sign In</p></button>
-            <button className="bg-transparent border border-white/40 hover:bg-white/10 transition-all py-2.5 rounded-lg font-medium w-full cursor-pointer"><p>Sign Up</p></button>
+            <button onClick={() => navigate("/register")} className="bg-transparent border border-white/40 hover:bg-white/10 transition-all py-2.5 rounded-lg font-medium w-full cursor-pointer"><p>Sign Up</p></button>
             <button className="bg-white text-gray-900 hover:bg-gray-200 transition-all py-2.5 rounded-lg font-medium flex items-center justify-center gap-2 w-full cursor-pointer">
               <img src="https://www.svgrepo.com/show/355037/google.svg" alt="Google" className="w-5 h-5"/>
               <p>Continue with Google</p>

@@ -10,6 +10,10 @@ const Login: React.FC = () => {
   const navigate: NavigateFunction = useNavigate();
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
+  const emailPattern: RegExp = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  const passwordPattern: RegExp = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+  const verifyEmailErrorMessage: string = "Please enter a valid email address.";
+  const verifyPasswordErrorMessage: string = "Password must contain at least 8 characters, one uppercase letter, one lowercase letter, one number, and one special character.";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,16 +23,13 @@ const Login: React.FC = () => {
       return;
     }
 
-    const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-
     if (!emailPattern.test(email)) {
-      toast.error("Please enter a valid email address.");
+      toast.error(verifyEmailErrorMessage);
       return;
     }
 
     if (!passwordPattern.test(password)) {
-      toast.error("Password must contain at least 8 characters, one uppercase letter, one lowercase letter, one number, and one special character.");
+      toast.error(verifyPasswordErrorMessage);
       return;
     }
 
@@ -75,16 +76,16 @@ const Login: React.FC = () => {
           <form className="flex flex-col gap-5">
             <div className="flex flex-col gap-2">
               <label htmlFor="email" className="text-sm font-medium opacity-90">Email</label>
-              <input id="email" type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$" title="Please enter a valid email address !" required className="bg-white/20 border border-white/30 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#9b8af7] placeholder-gray-300 text-white"/>
+              <input id="email" type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} pattern={emailPattern.source} title={verifyEmailErrorMessage} required className="bg-white/20 border border-white/30 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#9b8af7] placeholder-gray-300 text-white"/>
             </div>
             <div className="flex flex-col gap-2">
               <label htmlFor="password" className="text-sm font-medium opacity-90">Password</label>
-              <input id="password" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$" title="Password must contain at least 8 characters, including an uppercase letter, a lowercase letter, a number, and a special character !" required className="bg-white/20 border border-white/30 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#9b8af7] placeholder-gray-300 text-white"/>
+              <input id="password" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} pattern={passwordPattern.source} title={verifyPasswordErrorMessage} required className="bg-white/20 border border-white/30 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#9b8af7] placeholder-gray-300 text-white"/>
             </div>
             <button type="submit" onClick={handleSubmit} className="bg-[#4F46E5] hover:bg-[#4338CA] transition-all py-2.5 rounded-lg font-medium mt-4 cursor-pointer"><p>Sign In</p></button>
             <div className="flex items-center justify-between text-sm mt-3 opacity-80">
               <p className="hover:text-[#9b8af7] transition cursor-pointer">Forgot password?</p>
-              <p className="hover:text-[#9b8af7] transition cursor-pointer">Create an account</p>
+              <p onClick={() => navigate("/register")} className="hover:text-[#9b8af7] transition cursor-pointer">Create an account</p>
             </div>
           </form>
         </div>

@@ -131,6 +131,21 @@ class AuthService extends GraphQLService {
     const response = await this.request<{verifyResetPasswordToken: boolean}>(query, undefined, token);
     return response.verifyResetPasswordToken;
   }
+
+  public async loginWithGoogle(idToken: string): Promise<string> {
+    const query: string = `
+      mutation LoginWithGoogle($idToken: String!) {
+        loginWithGoogle(idToken: $idToken)
+      }
+    `;
+
+    const variables = {
+      idToken
+    }
+
+    const response = await this.request<{loginWithGoogle: string}>(query, variables);
+    return response.loginWithGoogle;
+  }
 }
 
 export default AuthService;

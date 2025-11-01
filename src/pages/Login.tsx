@@ -89,7 +89,7 @@ const Login: React.FC = () => {
             </div>
             <button type="submit" onClick={handleSubmit} className="bg-[#4F46E5] hover:bg-[#4338CA] transition-all py-2.5 rounded-lg font-medium mt-4 cursor-pointer"><p>Sign In</p></button>
             <div className="flex items-center justify-between text-sm mt-3 opacity-80">
-              <p className="hover:text-[#9b8af7] transition cursor-pointer">Forgot password?</p>
+              <p onClick={() => navigate("/forgot-password")} className="hover:text-[#9b8af7] transition cursor-pointer">Forgot password?</p>
               <p onClick={() => navigate("/register")} className="hover:text-[#9b8af7] transition cursor-pointer">Create an account</p>
             </div>
           </form>

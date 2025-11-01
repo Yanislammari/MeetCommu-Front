@@ -75,6 +75,36 @@ class AuthService extends GraphQLService {
     const response = await this.request<{checkUsernameAvailability: boolean}>(query, variables);
     return response.checkUsernameAvailability;
   }
+
+  public async checkEmailAvailability(email: string): Promise<boolean> {
+    const query: string = `
+      query CheckEmailAvailability($email: Email!) {
+        checkEmailAvailability(email: $email)
+      }
+    `;
+
+    const variables = {
+      email
+    }
+
+    const response = await this.request<{checkEmailAvailability: boolean}>(query, variables);
+    return response.checkEmailAvailability;
+  }
+
+  public async sendResetPasswordMail(email: string): Promise<boolean> {
+    const query: string = `
+      mutation SendPasswordResetEmail($email: Email!) {
+        sendPasswordResetEmail(email: $email)
+      }
+    `;
+
+    const variables = {
+      email
+    }
+
+    const response = await this.request<{sendPasswordResetEmail: boolean}>(query, variables);
+    return response.sendPasswordResetEmail;
+  }
 }
 
 export default AuthService;

@@ -5,10 +5,12 @@ import AuthService from "../services/auth.service";
 import { useNavigate, type NavigateFunction } from "react-router";
 import { FaCheck, FaTimes, FaSpinner } from "react-icons/fa";
 import { toast } from "sonner";
+import { useAuth } from "../providers/AuthProvider";
 
 const Register: React.FC = () => {
   const authService: AuthService = new AuthService();
   const navigate: NavigateFunction = useNavigate();
+  const { setToken } = useAuth();
   const [firstName, setFirstName] = useState<string>("");
   const [lastName, setLastName] = useState<string>("");
   const [username, setUsername] = useState<string>("");
@@ -70,7 +72,7 @@ const Register: React.FC = () => {
         return;
       }
 
-      localStorage.setItem("token", token);
+      setToken(token);
       toast.success("Successfully registered!");
       navigate("/home");
     }

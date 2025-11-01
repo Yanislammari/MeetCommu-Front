@@ -1,3 +1,4 @@
+import type { User } from "../models/User";
 import GraphQLService from "./graphql.service";
 
 class AuthService extends GraphQLService {
@@ -145,6 +146,17 @@ class AuthService extends GraphQLService {
 
     const response = await this.request<{loginWithGoogle: string}>(query, variables);
     return response.loginWithGoogle;
+  }
+
+  public async decodeToken(token: string): Promise<User> {
+    const query: string = `
+      query {
+        me
+      }
+    `;
+
+    const response = await this.request<{me: User}>(query, undefined, token);
+    return response.me;
   }
 }
 

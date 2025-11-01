@@ -4,10 +4,12 @@ import backgroundImage from "./../assets/background.png";
 import { toast } from "sonner";
 import AuthService from "../services/auth.service";
 import { useNavigate, type NavigateFunction } from "react-router";
+import { useAuth } from "../providers/AuthProvider";
 
 const Login: React.FC = () => {
   const authService: AuthService = new AuthService();
   const navigate: NavigateFunction = useNavigate();
+  const { setToken } = useAuth();
   const [identifier, setIdentifier] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const emailPattern: RegExp = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
@@ -42,7 +44,7 @@ const Login: React.FC = () => {
         return;
       }
 
-      localStorage.setItem("token", token);
+      setToken(token);
       toast.success("Successfully signed in!");
       navigate("/home");
     }

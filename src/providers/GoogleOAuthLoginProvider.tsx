@@ -1,14 +1,13 @@
 import { GoogleOAuthProvider } from "@react-oauth/google";
-
 const GOOGLE_CLIENT_ID: string = import.meta.env.VITE_GOOGLE_OAUTH_CLIENT_ID;
 
 interface GoogleOAuthLoginProviderProps {
-  children: React.ReactNode
+  children: React.ReactNode;
 }
 
-const GoogleOAuthLoginProvider: React.FC<GoogleOAuthLoginProviderProps> = ({ children }) => (
+const GoogleOAuthLoginProvider: React.FC<GoogleOAuthLoginProviderProps> = (props: GoogleOAuthLoginProviderProps) => (
   <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-    {children}
+    {props.children}
   </GoogleOAuthProvider>
 )
 

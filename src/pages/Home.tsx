@@ -4,10 +4,12 @@ import backgroundImage from "./../assets/background.png";
 import { GoogleLogin, type CredentialResponse } from "@react-oauth/google";
 import { toast } from "sonner";
 import AuthService from "../services/auth.service";
+import { useAuth } from "../providers/AuthProvider";
 
 const Home: React.FC = () => {
-  const navigate: NavigateFunction = useNavigate();
   const authService = new AuthService();
+  const navigate: NavigateFunction = useNavigate();
+  const { setToken } = useAuth();
 
   const handleGoogleLogin = async (credentialResponse: CredentialResponse) => {
     try {
@@ -18,7 +20,7 @@ const Home: React.FC = () => {
       }
 
       const token: string = await authService.loginWithGoogle(idToken);
-      localStorage.setItem("token", token);
+      setToken(token);
       toast.success("Signed in with Google successfully!");
       navigate("/home");
     }

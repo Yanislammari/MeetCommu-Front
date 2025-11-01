@@ -9,7 +9,6 @@ import { FaCheck, FaTimes, FaSpinner } from "react-icons/fa";
 const ForgotPassword: React.FC = () => {
   const authService: AuthService = new AuthService();
   const navigate: NavigateFunction = useNavigate();
-
   const [email, setEmail] = useState<string>("");
   const [isChecking, setIsChecking] = useState<boolean>(false);
   const [exists, setExists] = useState<boolean | null>(null);

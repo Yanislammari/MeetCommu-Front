@@ -105,6 +105,32 @@ class AuthService extends GraphQLService {
     const response = await this.request<{sendPasswordResetEmail: boolean}>(query, variables);
     return response.sendPasswordResetEmail;
   }
+
+  public async resetPassword(password: string, token: string): Promise<boolean> {
+    const query: string = `
+      mutation ResetPassword($password: Password!) {
+        resetPassword(password: $password)
+      }
+    `;
+
+    const variables = {
+      password
+    }
+
+    const response = await this.request<{resetPassword: boolean}>(query, variables, token);
+    return response.resetPassword;
+  }
+
+  public async verifyResetPasswordToken(token: string): Promise<boolean> {
+    const query: string = `
+      query {
+        verifyResetPasswordToken
+      }
+    `;
+
+    const response = await this.request<{verifyResetPasswordToken: boolean}>(query, undefined, token);
+    return response.verifyResetPasswordToken;
+  }
 }
 
 export default AuthService;

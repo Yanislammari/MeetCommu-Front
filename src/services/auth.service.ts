@@ -151,13 +151,22 @@ class AuthService extends GraphQLService {
   public async decodeToken(token: string): Promise<User> {
     const query: string = `
       query {
-        me
+        me {
+          id
+          firstName
+          lastName
+          username
+          email
+          profilePictureUrl
+          role
+          visibility
+        }
       }
     `;
-
-    const response = await this.request<{me: User}>(query, undefined, token);
+  
+    const response = await this.request<{ me: User }>(query, undefined, token);
     return response.me;
-  }
+  }  
 }
 
 export default AuthService;

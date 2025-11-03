@@ -1,23 +1,20 @@
 import type React from "react";
 import Navbar from "../components/Navbar";
-import { useAuth } from "../providers/AuthProvider";
 import Sidebar from "../components/Sidebar";
 import { MENU_ITEMS } from "../constants/MenuItems";
+import { useAuth } from "../providers/AuthProvider";
 
-const Home: React.FC = () => {
+const Messages: React.FC = () => {
   const { user } = useAuth();
 
   return (
     <div className="flex h-screen bg-[#0f0f1a] text-white">
       <Sidebar menuItems={MENU_ITEMS} userConnected={user} />
       <main className="flex-1 flex flex-col">
-        <Navbar  userConnected={user} />
-        <section className="flex-1 overflow-y-auto p-6">
-          <h2 className="text-2xl font-semibold mb-4">Home</h2>
-        </section>
+        <Navbar userConnected={user} />
       </main>
     </div>
-  );
-};
+  )
+}
 
-export default Home;
+export default Messages;

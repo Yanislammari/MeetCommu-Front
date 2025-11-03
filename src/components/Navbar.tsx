@@ -40,7 +40,7 @@ const Navbar: React.FC<NavbarProps> = (props: NavbarProps) => {
           <FiSearch className="w-5 h-5 absolute left-3 top-2.5 text-gray-400" />
         </div>
         <div className="flex items-center gap-2 text-gray-200 cursor-pointer select-none relative" onClick={() => props.userConnected && setIsMenuOpen(!isMenuOpen)}>
-          <div className="hidden md:flex flex-col items-end mr-2">
+          <div className="hidden md:flex flex-col items-end">
             <p className="font-semibold text-sm">{props.userConnected ? props.userConnected.firstName : "Invité"}</p>
             <p className="text-xs text-gray-400">{props.userConnected ? `@${props.userConnected.username}` : "-"}</p>
           </div>

@@ -6,6 +6,7 @@ import type Size from "../models/Size";
 interface UserAvatarProps {
   userConnected: User | null;
   size?: Size;
+  onClick?: () => void;
 }
 
 const UserAvatar: React.FC<UserAvatarProps> = (props: UserAvatarProps) => {
@@ -30,7 +31,7 @@ const UserAvatar: React.FC<UserAvatarProps> = (props: UserAvatarProps) => {
   }
 
   return (
-    <div className={`${props.size} rounded-full flex-shrink-0 border border-white/10 hover:border-[#9b8af7] transition-all overflow-hidden flex items-center justify-center`} style={{ backgroundColor: !props.userConnected ? "transparent" : props.userConnected.profilePictureUrl ? "transparent" : getColorString(props.userConnected.username || "user") }}>
+    <div onClick={props.onClick} className={`${props.size} rounded-full flex-shrink-0 border border-white/10 hover:border-[#9b8af7] transition-all overflow-hidden flex items-center justify-center cursor-pointer`} style={{ backgroundColor: !props.userConnected ? "transparent" : props.userConnected.profilePictureUrl ? "transparent" : getColorString(props.userConnected.username || "user") }}>
       {!props.userConnected ? (
         <img alt="Profil placeholder" src={placeholder} className="w-full h-full object-cover opacity-90" />
       ) : props.userConnected.profilePictureUrl ? (

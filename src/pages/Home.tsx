@@ -19,10 +19,7 @@ const Home: React.FC = () => {
       {/* === Main content === */}
       <main className="flex-1 flex flex-col">
         {/* Navbar */}
-        {user && (
-          <Navbar userConnected={user} />
-        )}
-
+        <Navbar  userConnected={user} />
         {/* Feed */}
         <section className="flex-1 overflow-y-auto p-6">
           <h2 className="text-2xl font-semibold mb-4">Home</h2>

@@ -1,4 +1,4 @@
-import type React from "react";
+import React from "react";
 import { useEffect, useState } from "react";
 import type { Conversation } from "../models/Conversation";
 import type { Message } from "../models/Message";
@@ -20,6 +20,7 @@ const ConversationWindow: React.FC<ConversationWindowProps> = (props: Conversati
   const [messages, setMessages] = useState<Message[]>(props.initialMessages ?? []);
   const [inputValue, setInputValue] = useState<string>("");
   const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
+  const messagesEndRef = React.useRef<HTMLDivElement | null>(null);
 
   const other = props.conversation.type === ConversationType.DIRECT ? props.conversation.participants.find((p) => p.id !== props.user.id) : null;
 
@@ -32,6 +33,10 @@ const ConversationWindow: React.FC<ConversationWindowProps> = (props: Conversati
 
     return () => unsubscribe();
   }, [props.conversation.id, props.initialMessages]);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   const handleSend = async () => {
     if (!inputValue.trim() && attachedFiles.length === 0){
@@ -72,6 +77,7 @@ const ConversationWindow: React.FC<ConversationWindowProps> = (props: Conversati
             );
           })
         )}
+        <div ref={messagesEndRef} />
       </div>
       <div className="p-4 border-t border-white/10 bg-[#141425]">
         <div className="flex items-center gap-3">

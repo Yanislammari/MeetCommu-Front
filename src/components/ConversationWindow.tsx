@@ -7,6 +7,7 @@ import ConversationType from "../models/ConversationType";
 import MessageService from "../services/message.service";
 import { toast } from "sonner";
 import { useAuth } from "../providers/AuthProvider";
+import MessageBubble from "./MessageBubble";
 
 interface ConversationWindowProps {
   user: User;
@@ -68,15 +69,10 @@ const ConversationWindow: React.FC<ConversationWindowProps> = (props: Conversati
             <p>Start chatting!</p>
           </div>
         ) : (
-          messages.map((message) => {
-            const isMine = message.sender.id === props.user.id;
-            return (
-              <div key={message.id} className={`max-w-xs px-4 py-2 text-sm rounded-2xl break-words ${ isMine ? "self-end bg-[#9b8af7] text-white" : "self-start bg-[#1e1e2f] text-gray-200" }`}>
-                <p>{message.content}</p>
-              </div>
-            );
-          })
-        )}
+          messages.map((message) => (
+            <MessageBubble key={message.id} message={message} isSender={message.sender.id === props.user.id} />
+          )
+        ))}
         <div ref={messagesEndRef} />
       </div>
       <div className="p-4 border-t border-white/10 bg-[#141425]">

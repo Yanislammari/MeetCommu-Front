@@ -4,19 +4,19 @@ import placeholder from "./../assets/placeholder.png";
 import type Size from "../models/Size";
 
 interface UserAvatarProps {
-  userConnected: User | null;
+  user: User | null;
   size?: Size;
   onClick?: () => void;
 }
 
 const UserAvatar: React.FC<UserAvatarProps> = (props: UserAvatarProps) => {
   const getInitials = (): string => {
-    if (!props.userConnected) {
+    if (!props.user) {
       return "??";
     }
 
-    const first: string = props.userConnected.firstName?.charAt(0).toUpperCase() || "";
-    const last: string = props.userConnected.lastName?.charAt(0).toUpperCase() || props.userConnected.username?.charAt(0).toUpperCase() || "";
+    const first: string = props.user.firstName?.charAt(0).toUpperCase() || "";
+    const last: string = props.user.lastName?.charAt(0).toUpperCase() || props.user.username?.charAt(0).toUpperCase() || "";
     return `${first}${last}`;
   }
 
@@ -31,11 +31,11 @@ const UserAvatar: React.FC<UserAvatarProps> = (props: UserAvatarProps) => {
   }
 
   return (
-    <div onClick={props.onClick} className={`${props.size} rounded-full flex-shrink-0 border border-white/10 hover:border-[#9b8af7] transition-all overflow-hidden flex items-center justify-center cursor-pointer`} style={{ backgroundColor: !props.userConnected ? "transparent" : props.userConnected.profilePictureUrl ? "transparent" : getColorString(props.userConnected.username || "user") }}>
-      {!props.userConnected ? (
+    <div onClick={props.onClick} className={`${props.size} rounded-full flex-shrink-0 border border-white/10 hover:border-[#9b8af7] transition-all overflow-hidden flex items-center justify-center cursor-pointer`} style={{ backgroundColor: !props.user ? "transparent" : props.user.profilePictureUrl ? "transparent" : getColorString(props.user.username || "user") }}>
+      {!props.user ? (
         <img alt="Profil placeholder" src={placeholder} className="w-full h-full object-cover opacity-90" />
-      ) : props.userConnected.profilePictureUrl ? (
-        <img alt="Profil" src={props.userConnected.profilePictureUrl!}
+      ) : props.user.profilePictureUrl ? (
+        <img alt="Profil" src={props.user.profilePictureUrl!}
           className="w-full h-full object-cover"
         />
       ) : (

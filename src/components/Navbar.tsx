@@ -41,10 +41,10 @@ const Navbar: React.FC<NavbarProps> = (props: NavbarProps) => {
         </div>
         <div className="flex items-center gap-2 text-gray-200 cursor-pointer select-none relative" onClick={() => props.userConnected && setIsMenuOpen(!isMenuOpen)}>
           <div className="hidden md:flex flex-col items-end">
-            <p className="font-semibold text-sm">{props.userConnected ? props.userConnected.firstName : "Invité"}</p>
+            <p className="font-semibold text-sm">{props.userConnected ? `${props.userConnected.firstName} ${props.userConnected.lastName}` : "Unknown"}</p>
             <p className="text-xs text-gray-400">{props.userConnected ? `@${props.userConnected.username}` : "-"}</p>
           </div>
-          <UserAvatar userConnected={props.userConnected} size={Size.MD} />
+          <UserAvatar user={props.userConnected} size={Size.MD} />
           {props.userConnected && isMenuOpen && (
             <UserDropdown menuItems={MENU_ITEMS} onLogoutClick={onLogoutClick} />
           )}

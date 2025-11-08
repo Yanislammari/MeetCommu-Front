@@ -47,7 +47,7 @@ const Sidebar: React.FC<SidebarProps> = (props: SidebarProps) => {
       <div className="p-4 border-t border-white/10 flex flex-col items-center md:items-start gap-3">
         {props.userConnected && (
           <div className="flex items-center gap-3">
-            <UserAvatar onClick={() => navigate("/profile")} userConnected={props.userConnected} size={Size.MD} />
+            <UserAvatar onClick={() => navigate("/profile")} user={props.userConnected} size={Size.MD} />
             <div className="hidden md:block">
               <p className="text-sm font-semibold">{props.userConnected.username}</p>
               <p className="text-xs opacity-70">{props.userConnected.email}</p>

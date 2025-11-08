@@ -1,7 +1,26 @@
 import type { Message } from "../models/Message";
 import GraphQLService from "./graphql.service";
+import { createClient } from "graphql-ws";
+import type { Client } from "graphql-ws";
+
+interface MessageSentSubscriptionPayload {
+  messageSent: Message;
+}
 
 class MessageService extends GraphQLService {
+  private readonly wsClient: Client;
+
+  constructor() {
+    super();
+    this.wsClient = createClient({
+      url: `${import.meta.env.VITE_WS_BASE_URL}/graphql`,
+      connectionParams: () => {
+        const token = localStorage.getItem("token");
+        return token ? { Authorization: `Bearer ${token}` } : {};
+      }
+    });
+  }
+  
   public async getMessageById(id: string): Promise<Message> {
     const query: string = `
       query Message($id: ID!) {
@@ -27,6 +46,7 @@ class MessageService extends GraphQLService {
           isUpdated
           createdAt
           updatedAt
+
           sender {
             id
             firstName
@@ -44,6 +64,97 @@ class MessageService extends GraphQLService {
 
     const response = await this.request<{messagesOfConversation: Message[]}>(query, variables);
     return response.messagesOfConversation;
+  }
+
+  public async sendMessage(conversationId: string, content: string, token: string, attachements?: File[]): Promise<Message> {
+    const mutation: string = `
+      mutation SendMessage($conversationId: ID!, $input: CreateMessageInput!, $files: [Upload!]) {
+        sendMessage(conversationId: $conversationId, input: $input, files: $files) {
+          id
+          content
+          attachementsUrls
+          isUpdated
+          createdAt
+          updatedAt
+
+          sender {
+            id
+            firstName
+            lastName
+            username
+            profilePictureUrl
+          }
+        }
+      }
+    `;
+
+    const variables = {
+      conversationId,
+      input: {
+        content
+      },
+      files: attachements ? new Array(attachements.length).fill(null) : undefined
+    }
+
+    const formData: FormData = new FormData();
+    formData.append(
+      "operations",
+      JSON.stringify({
+        query: mutation,
+        variables: variables
+      })
+    );
+
+    if (attachements && attachements.length > 0) {
+      const map: Record<string, string[]> = {};
+      attachements.forEach((_, index) => {
+        map[`${index}`] = [`variables.files.${index}`];
+      });
+
+      formData.append("map", JSON.stringify(map));
+
+      attachements.forEach((file, index) => {
+        formData.append(`${index}`, file);
+      });
+    }
+    else {
+      formData.append("map", JSON.stringify({}));
+    }
+
+    const response = await this.request<{sendMessage: Message}>(mutation, variables, token, formData);
+    return response.sendMessage;
+  }
+
+  public subscribeToMessages(conversationId: string, onMessage: (msg: Message) => void): () => void {
+    const dispose = this.wsClient.subscribe<MessageSentSubscriptionPayload>({
+      query: `
+        subscription OnMessageSent($conversationId: ID!) {
+          messageSent(conversationId: $conversationId) {
+            id
+            content
+            attachementsUrls
+            createdAt
+            sender {
+              id
+              username
+              profilePictureUrl
+            }
+          }
+        }
+      `,
+      variables: { conversationId },
+    }, {
+      next: (payload) => {
+        const message = payload.data?.messageSent;
+        if (message) onMessage(message);
+      },
+      error: (err) => console.error("Subscription error:", err),
+      complete: () => console.log("Subscription complete"),
+    });
+
+    return () => {
+      dispose();
+    }
   }
 }
 

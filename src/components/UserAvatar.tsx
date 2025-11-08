@@ -35,9 +35,7 @@ const UserAvatar: React.FC<UserAvatarProps> = (props: UserAvatarProps) => {
       {!props.user ? (
         <img alt="Profil placeholder" src={placeholder} className="w-full h-full object-cover opacity-90" />
       ) : props.user.profilePictureUrl ? (
-        <img alt="Profil" src={props.user.profilePictureUrl!}
-          className="w-full h-full object-cover"
-        />
+        <img alt="Profil" src={props.user.profilePictureUrl!} className="w-full h-full object-cover" />
       ) : (
         <span className="font-semibold text-white select-none">{getInitials()}</span>
       )}

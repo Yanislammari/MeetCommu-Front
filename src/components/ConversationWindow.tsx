@@ -9,7 +9,7 @@ import { useAuth } from "../providers/AuthProvider";
 import MessageBubble from "./MessageBubble";
 import FilePreview from "./FilePreview";
 import DeleteConfirmationModal from "./DeleteConfirmationModal";
-import { FaPaperclip, FaPaperPlane, FaEdit, FaTimes } from "react-icons/fa";
+import { FaPaperclip, FaPaperPlane, FaEdit, FaTimes, FaSmile, FaImage, FaEllipsisH } from "react-icons/fa";
 
 interface ConversationWindowProps {
   user: User;
@@ -27,6 +27,7 @@ const ConversationWindow: React.FC<ConversationWindowProps> = (props) => {
   const [editingMessage, setEditingMessage] = useState<Message | null>(null);
   const [fileInputKey, setFileInputKey] = useState(0);
   const [messageToDelete, setMessageToDelete] = useState<Message | null>(null);
+  const [showMenu, setShowMenu] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   const other = props.conversation.type === ConversationType.DIRECT ? props.conversation.participants.find((p) => p.id !== props.user.id) : null;
@@ -197,7 +198,7 @@ const ConversationWindow: React.FC<ConversationWindowProps> = (props) => {
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full w-full min-w-0">
       <div className="flex items-center gap-3 px-6 py-4 border-b border-white/10 bg-[#141425]">
         <img src={props.conversation.type === ConversationType.DIRECT ? other?.profilePictureUrl ?? "/placeholder.png" : props.conversation.pictureUrl ?? "/placeholder.png"} alt="Conversation" className="w-10 h-10 rounded-full object-cover" />
         <div>
@@ -217,29 +218,49 @@ const ConversationWindow: React.FC<ConversationWindowProps> = (props) => {
         )}
         <div ref={messagesEndRef} />
       </div>
-      <div className="p-4 border-t border-white/10 bg-[#141425]">
+      <div className="p-4 border-t border-white/10 bg-[#141425] min-w-0">
         {(attachedFiles.length > 0 || existingAttachments.length > 0) && (
-          <div className="mb-3 flex gap-3 overflow-x-auto scrollbar-thin scrollbar-thumb-[#2f2f47] pb-2">
-            {existingAttachments.map((url) => (
-              <FilePreview key={url} url={url} isInputPreview onRemove={() => removeExistingAttachment(url)} />
-            ))}
-            {attachedFiles.map((file) => (
-              <FilePreview key={file.name} file={file} isInputPreview onRemove={() => removeFile(file)} />
-            ))}
+          <div className="mb-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-[#2f2f47] scrollbar-track-transparent -mx-4">
+            <div className="flex gap-3 flex-nowrap px-4 after:content-[''] after:block after:w-2 after:flex-shrink-0">
+              {existingAttachments.map((url) => (
+                <FilePreview key={url} url={url} isInputPreview onRemove={() => removeExistingAttachment(url)} />
+              ))}
+              {attachedFiles.map((file) => (
+                <FilePreview key={file.name} file={file} isInputPreview onRemove={() => removeFile(file)} />
+              ))}
+            </div>
           </div>
         )}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 relative">
           <input type="text" placeholder={editingMessage ? "Edit your message..." : "Write message..."} value={inputValue} onKeyDown={(e) => e.key === "Enter" && handleSend()} onChange={(e) => setInputValue(e.target.value)} onPaste={handlePaste} className="flex-1 bg-[#1e1e2f] border border-white/10 rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#9b8af7] focus:outline-none text-sm text-gray-200 placeholder-gray-500" />
           {editingMessage && (
             <button onClick={handleCancelEdit} title="Cancel the edit" className="flex items-center justify-center w-9 h-9 rounded-full bg-red-500/20 hover:bg-red-500/40 transition cursor-pointer">
               <FaTimes className="text-red-400 text-lg" />
             </button>
           )}
-          <input key={fileInputKey} type="file" multiple onChange={handleFileChange} className="hidden" id="file-upload" />
-          <label htmlFor="file-upload" className="flex items-center justify-center w-9 h-9 rounded-full bg-[#9b8af7]/20 hover:bg-[#9b8af7]/30 transition cursor-pointer">
-            <FaPaperclip className="text-[#9b8af7] text-lg" />
-          </label>
-          <button onClick={handleSend} className={`flex items-center justify-center w-9 h-9 rounded-full ${editingMessage ? "bg-yellow-500 hover:bg-yellow-400" : "bg-[#9b8af7] hover:bg-[#7f72db]"} transition cursor-pointer`}>
+          <div className="relative">
+            <button onClick={() => setShowMenu((prev) => !prev)} className="flex items-center justify-center w-9 h-9 rounded-full bg-[#9b8af7]/20 hover:bg-[#9b8af7]/30 transition cursor-pointer">
+              <FaEllipsisH className="text-[#9b8af7] text-lg" />
+            </button>
+            {showMenu && (
+              <div className="absolute bottom-12 right-0 bg-[#1e1e2f] border border-white/10 rounded-xl p-2 flex flex-col gap-2 shadow-lg animate-fade-in z-50">
+                <label htmlFor="file-upload" className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#9b8af7]/20 hover:bg-[#9b8af7]/30 cursor-pointer transition text-[#cfcdfc] text-sm">
+                  <FaPaperclip className="text-[#9b8af7]" />
+                  <p>File</p>
+                </label>
+                <input key={fileInputKey} type="file" multiple onChange={handleFileChange} className="hidden" id="file-upload" />
+                <button className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#9b8af7]/20 hover:bg-[#9b8af7]/30  text-[#cfcdfc] text-sm transition">
+                  <FaImage className="text-[#9b8af7]" />
+                  <p>GIF</p>
+                </button>
+                <button className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#9b8af7]/20 hover:bg-[#9b8af7]/30 text-[#cfcdfc] text-sm transition">
+                  <FaSmile className="text-[#9b8af7]" />
+                  <p>Emoji</p>
+                </button>
+              </div>
+            )}
+          </div>
+          <button onClick={handleSend} className={`flex items-center justify-center w-9 h-9 rounded-full ${ editingMessage ? "bg-yellow-500 hover:bg-yellow-400" : "bg-[#9b8af7] hover:bg-[#7f72db]" } transition cursor-pointer`}>
             {editingMessage ? (
               <FaEdit className="text-white text-sm" />
             ) : (

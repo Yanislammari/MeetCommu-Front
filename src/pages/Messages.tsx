@@ -58,10 +58,10 @@ const Messages: React.FC = () => {
   return (
     <div className="flex h-screen bg-[#0f0f1a] text-white overflow-hidden">
       <Sidebar menuItems={MENU_ITEMS} userConnected={user} />
-      <main className="flex-1 flex flex-col">
+      <main className="flex-1 flex flex-col min-w-0">
         <Navbar userConnected={user} />
-        <div className="flex flex-1 overflow-hidden">
-          <section className="flex-1 flex flex-col bg-[#0f0f1a]">
+        <div className="flex flex-1 overflow-hidden min-w-0">
+          <section className="flex-1 flex flex-col bg-[#0f0f1a] min-w-0">
             {loading ? (
               <div className="flex items-center justify-center flex-1 text-gray-400">
                 <p>Loading conversations...</p>

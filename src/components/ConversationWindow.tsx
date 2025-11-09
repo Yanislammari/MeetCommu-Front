@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { useAuth } from "../providers/AuthProvider";
 import MessageBubble from "./MessageBubble";
 import FilePreview from "./FilePreview";
-import { FaPaperclip, FaPaperPlane } from "react-icons/fa";
+import { FaPaperclip, FaPaperPlane, FaEdit, FaTimes } from "react-icons/fa";
 
 interface ConversationWindowProps {
   user: User;
@@ -19,12 +19,13 @@ interface ConversationWindowProps {
 const ConversationWindow: React.FC<ConversationWindowProps> = (props: ConversationWindowProps) => {
   const messageService = new MessageService();
   const { token } = useAuth();
-
   const [messages, setMessages] = useState<Message[]>(props.initialMessages ?? []);
-  const [inputValue, setInputValue] = useState<string>("");
+  const [inputValue, setInputValue] = useState("");
   const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
+  const [existingAttachments, setExistingAttachments] = useState<string[]>([]);
+  const [editingMessage, setEditingMessage] = useState<Message | null>(null);
+  const [fileInputKey, setFileInputKey] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const other = props.conversation.type === ConversationType.DIRECT ? props.conversation.participants.find((p) => p.id !== props.user.id) : null;
 
@@ -32,41 +33,104 @@ const ConversationWindow: React.FC<ConversationWindowProps> = (props: Conversati
     setMessages(props.initialMessages ?? []);
     setInputValue("");
     setAttachedFiles([]);
+    setExistingAttachments([]);
+    setEditingMessage(null);
 
-    const unsubscribe = messageService.subscribeToMessages(props.conversation.id, (message) => setMessages((prev) => [...prev, message]));
+    const unsubscribeSent = messageService.subscribeToMessageSent(props.conversation.id, (message) => setMessages((prev) => [...prev, message]));
+    const unsubscribeUpdated = messageService.subscribeToMessageUpdated(props.conversation.id, (updatedMessage) => setMessages((prev) => prev.map((message) => (message.id === updatedMessage.id ? { ...updatedMessage, isUpdated: true } : message))));
 
-    return () => unsubscribe();
+    return () => {
+      unsubscribeSent();
+      unsubscribeUpdated();
+    };
   }, [props.conversation.id, props.initialMessages]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  const combineAllFiles = async (): Promise<File[]> => {
+    const finalFiles: File[] = [];
+
+    for (const url of existingAttachments) {
+      try {
+        const response: Response = await fetch(url);
+        const blob: Blob = await response.blob();
+        const rawName: string = url.split("/").pop() || "file";
+        const cleanName: string = rawName.includes("-") ? rawName.split("-").slice(1).join("-") : rawName;
+
+        const file = new File([blob], cleanName, {
+          type: blob.type || "application/octet-stream",
+        });
+
+        finalFiles.push(file);
+      }
+      catch (err) {
+        toast.error("An error occurred with an attachment of a message.");
+      }
+    }
+
+    finalFiles.push(...attachedFiles);
+    return finalFiles;
+  }
+
   const handleSend = async () => {
-    if (!inputValue.trim() && attachedFiles.length === 0) {
+    if (!inputValue.trim() && attachedFiles.length === 0 && existingAttachments.length === 0) {
       return;
     }
 
     try {
-      await messageService.sendMessage(props.conversation.id, inputValue, token!, attachedFiles);
+      if (editingMessage) {
+        const filesToSend = await combineAllFiles();
+        const updated = await messageService.editMessage(editingMessage.id, inputValue, token!, filesToSend);
+        setMessages((prev) => prev.map((message) => (message.id === updated.id ? { ...updated, isUpdated: true } : message)));
+        toast.success("Message updated.");
+        setEditingMessage(null);
+      }
+      else {
+        await messageService.sendMessage(props.conversation.id, inputValue, token!, attachedFiles);
+      }
+
       setInputValue("");
       setAttachedFiles([]);
+      setExistingAttachments([]);
+      setFileInputKey((key) => key + 1);
     }
-    catch {
+    catch (err) {
       toast.error("Failed to send message.");
     }
   }
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      setAttachedFiles(Array.from(e.target.files));
-    }
+  const handleEdit = (message: Message) => {
+    setEditingMessage(message);
+    setInputValue(message.content);
+    setAttachedFiles([]);
+    setExistingAttachments(message.attachmentsUrls ?? []);
+    setFileInputKey((key) => key + 1);
+  }
 
-    e.target.value = "";
+  const handleCancelEdit = () => {
+    setEditingMessage(null);
+    setInputValue("");
+    setAttachedFiles([]);
+    setExistingAttachments([]);
+    setFileInputKey((key) => key + 1);
+  }
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files ? Array.from(e.target.files) : [];
+    if (files.length > 0) {
+      setAttachedFiles((prev) => [...prev, ...files]);
+      setFileInputKey((key) => key + 1);
+    }
   }
 
   const removeFile = (fileToRemove: File) => {
-    setAttachedFiles((prev) => prev.filter((f) => f !== fileToRemove));
+    setAttachedFiles((prev) => prev.filter((file) => file !== fileToRemove));
+  }
+
+  const removeExistingAttachment = (urlToRemove: string) => {
+    setExistingAttachments((prev) => prev.filter((url) => url !== urlToRemove));
   }
 
   return (
@@ -85,27 +149,39 @@ const ConversationWindow: React.FC<ConversationWindowProps> = (props: Conversati
           </div>
         ) : (
           messages.map((message) => (
-            <MessageBubble key={message.id} message={message} isSender={message.sender.id === props.user.id} />
+            <MessageBubble key={message.id} message={message} isSender={message.sender.id === props.user.id} onEdit={handleEdit} />
           ))
         )}
         <div ref={messagesEndRef} />
       </div>
       <div className="p-4 border-t border-white/10 bg-[#141425]">
-        {attachedFiles.length > 0 && (
+        {(attachedFiles.length > 0 || existingAttachments.length > 0) && (
           <div className="mb-3 flex gap-3 overflow-x-auto scrollbar-thin scrollbar-thumb-[#2f2f47] pb-2">
+            {existingAttachments.map((url) => (
+              <FilePreview key={url} url={url} isInputPreview onRemove={() => removeExistingAttachment(url)} />
+            ))}
             {attachedFiles.map((file) => (
               <FilePreview key={file.name} file={file} isInputPreview onRemove={() => removeFile(file)} />
             ))}
           </div>
         )}
         <div className="flex items-center gap-3">
-          <input type="text" placeholder="Write message..." value={inputValue} onKeyDown={(e) => e.key === "Enter" && handleSend()} onChange={(e) => setInputValue(e.target.value)} className="flex-1 bg-[#1e1e2f] border border-white/10 rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#9b8af7] focus:outline-none text-sm text-gray-200 placeholder-gray-500" />
-          <input ref={fileInputRef} type="file" multiple onChange={handleFileChange} className="hidden" id="file-upload" />
+          <input type="text" placeholder={editingMessage ? "Edit your message..." : "Write message..."} value={inputValue} onKeyDown={(e) => e.key === "Enter" && handleSend()} onChange={(e) => setInputValue(e.target.value)} className="flex-1 bg-[#1e1e2f] border border-white/10 rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#9b8af7] focus:outline-none text-sm text-gray-200 placeholder-gray-500" />
+          {editingMessage && (
+            <button onClick={handleCancelEdit} title="Cancel the edit" className="flex items-center justify-center w-9 h-9 rounded-full bg-red-500/20 hover:bg-red-500/40 transition cursor-pointer">
+              <FaTimes className="text-red-400 text-lg" />
+            </button>
+          )}
+          <input key={fileInputKey} type="file" multiple onChange={handleFileChange} className="hidden" id="file-upload" />
           <label htmlFor="file-upload" className="flex items-center justify-center w-9 h-9 rounded-full bg-[#9b8af7]/20 hover:bg-[#9b8af7]/30 transition cursor-pointer">
             <FaPaperclip className="text-[#9b8af7] text-lg" />
           </label>
-          <button onClick={handleSend} className="flex items-center justify-center w-9 h-9 rounded-full bg-[#9b8af7] hover:bg-[#7f72db] transition cursor-pointer">
-            <FaPaperPlane className="text-white text-sm" />
+          <button onClick={handleSend} className={`flex items-center justify-center w-9 h-9 rounded-full ${ editingMessage ? "bg-yellow-500 hover:bg-yellow-400" : "bg-[#9b8af7] hover:bg-[#7f72db]" } transition cursor-pointer`}>
+            {editingMessage ? (
+              <FaEdit className="text-white text-sm" />
+            ) : (
+              <FaPaperPlane className="text-white text-sm" />
+            )}
           </button>
         </div>
       </div>

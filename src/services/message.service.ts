@@ -7,6 +7,10 @@ interface MessageSentSubscriptionPayload {
   messageSent: Message;
 }
 
+interface MessageUpdatedSubscriptionPayload {
+  messageUpdated: Message;
+}
+
 class MessageService extends GraphQLService {
   private readonly wsClient: Client;
 
@@ -125,7 +129,66 @@ class MessageService extends GraphQLService {
     return response.sendMessage;
   }
 
-  public subscribeToMessages(conversationId: string, onMessage: (msg: Message) => void): () => void {
+  public async editMessage(messageId: string, newContent: string, token: string, attachments?: File[]): Promise<Message> {
+    const query: string = `
+      mutation UpdateMessage($id: ID!, $input: UpdateMessageInput!, $files: [Upload!]) {
+        updateMessage(id: $id, input: $input, files: $files) {
+          id
+          content
+          attachmentsUrls
+          isUpdated
+          createdAt
+          updatedAt
+
+          sender {
+            id
+            firstName
+            lastName
+            username
+            profilePictureUrl
+          }
+        }
+      }
+    `;
+
+    const variables = {
+      id: messageId,
+      input: {
+        content: newContent
+      },
+      files: attachments ? new Array(attachments.length).fill(null) : undefined
+    }
+
+    const formData: FormData = new FormData();
+    formData.append(
+      "operations",
+      JSON.stringify({
+        query: query,
+        variables: variables
+      })
+    );
+
+    if (attachments && attachments.length > 0) {
+      const map: Record<string, string[]> = {};
+      attachments.forEach((_, index) => {
+        map[`${index}`] = [`variables.files.${index}`];
+      });
+
+      formData.append("map", JSON.stringify(map));
+
+      attachments.forEach((file, index) => {
+        formData.append(`${index}`, file);
+      });
+    }
+    else {
+      formData.append("map", JSON.stringify({}));
+    }
+
+    const response = await this.request<{updateMessage: Message}>(query, variables, token, formData);
+    return response.updateMessage;
+  }
+
+  public subscribeToMessageSent(conversationId: string, onMessage: (msg: Message) => void): () => void {
     const dispose = this.wsClient.subscribe<MessageSentSubscriptionPayload>({
       query: `
         subscription OnMessageSent($conversationId: ID!) {
@@ -134,6 +197,7 @@ class MessageService extends GraphQLService {
             content
             attachmentsUrls
             createdAt
+            
             sender {
               id
               username
@@ -146,10 +210,47 @@ class MessageService extends GraphQLService {
     }, {
       next: (payload) => {
         const message = payload.data?.messageSent;
-        if (message) onMessage(message);
+        if (message) {
+          onMessage(message);
+        }
       },
       error: (err) => console.error("Subscription error:", err),
-      complete: () => console.log("Subscription complete"),
+      complete: () => console.log("Subscription completed"),
+    });
+
+    return () => {
+      dispose();
+    }
+  }
+
+  public subscribeToMessageUpdated(conversationId: string, onMessage: (msg: Message) => void): () => void {
+    const dispose = this.wsClient.subscribe<MessageUpdatedSubscriptionPayload>({
+      query: `
+        subscription MessageUpdated($conversationId: ID!) {
+          messageUpdated(conversationId: $conversationId) {
+            id
+            content
+            attachmentsUrls
+            createdAt
+
+            sender {
+              id
+              username
+              profilePictureUrl
+            }
+          }
+        }
+      `,
+      variables: { conversationId },
+    }, {
+      next: (payload) => {
+        const message = payload.data?.messageUpdated;
+        if (message) {
+          onMessage(message);
+        }
+      },
+      error: (err) => console.error("Subscription error:", err),
+      complete: () => console.log("Subscription completed"),
     });
 
     return () => {

@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams, type NavigateFunction } from "react-router";
 import backgroundImage from "./../assets/background-alt.png";
 import { toast } from "sonner";
-import AuthService from "../services/auth.service";
+import AuthService from "../services/AuthService";
 
 const ResetPassword: React.FC = () => {
   const authService: AuthService = new AuthService();

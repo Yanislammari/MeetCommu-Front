@@ -1,6 +1,6 @@
 import type React from "react";
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
-import AuthService from "../services/auth.service";
+import AuthService from "../services/AuthService";
 import type { User } from "../models/User";
 
 interface AuthContextType {

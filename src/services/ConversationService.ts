@@ -1,6 +1,6 @@
 import type { Conversation } from "../models/Conversation";
 import type { Message } from "../models/Message";
-import GraphQLService from "./graphql.service";
+import GraphQLService from "./GraphQLService";
 
 class ConversationService extends GraphQLService {
   public async getLastMessageOfConversation(conversationId: string): Promise<Message> {
@@ -11,6 +11,7 @@ class ConversationService extends GraphQLService {
           content
           attachmentsUrls
           isUpdated
+          isDeleted
           createdAt
           updatedAt
 
@@ -58,6 +59,7 @@ class ConversationService extends GraphQLService {
             content
             attachmentsUrls
             isUpdated
+            isDeleted
             createdAt
             updatedAt
 

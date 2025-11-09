@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, type NavigateFunction } from "react-router";
 import backgroundImage from "./../assets/background.png";
 import { toast } from "sonner";
-import AuthService from "../services/auth.service";
+import AuthService from "../services/AuthService";
 import { FaCheck, FaTimes, FaSpinner } from "react-icons/fa";
 
 const ForgotPassword: React.FC = () => {

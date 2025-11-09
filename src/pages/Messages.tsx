@@ -5,10 +5,10 @@ import { MENU_ITEMS } from "../constants/MenuItems";
 import { useAuth } from "../providers/AuthProvider";
 import { useEffect, useState } from "react";
 import ConversationPanel from "../components/ConversationPanel";
-import ConversationService from "../services/conversation.service";
+import ConversationService from "../services/ConversationService";
 import type { Conversation } from "../models/Conversation";
 import { toast } from "sonner";
-import MessageService from "../services/message.service";
+import MessageService from "../services/MessageService";
 import type { Message } from "../models/Message";
 import ConversationWindow from "../components/ConversationWindow";
 

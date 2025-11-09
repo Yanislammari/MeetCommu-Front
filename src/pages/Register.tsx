@@ -1,7 +1,7 @@
 import type React from "react";
 import { useState, useEffect } from "react";
 import backgroundImage from "./../assets/background.png";
-import AuthService from "../services/auth.service";
+import AuthService from "../services/AuthService";
 import { useNavigate, type NavigateFunction } from "react-router";
 import { FaCheck, FaTimes, FaSpinner } from "react-icons/fa";
 import { toast } from "sonner";

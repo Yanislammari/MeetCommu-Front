@@ -3,11 +3,12 @@ import type { Conversation } from "../models/Conversation";
 import type { Message } from "../models/Message";
 import type { User } from "../models/User";
 import ConversationType from "../models/ConversationType";
-import MessageService from "../services/message.service";
+import MessageService from "../services/MessageService";
 import { toast } from "sonner";
 import { useAuth } from "../providers/AuthProvider";
 import MessageBubble from "./MessageBubble";
 import FilePreview from "./FilePreview";
+import DeleteConfirmationModal from "./DeleteConfirmationModal";
 import { FaPaperclip, FaPaperPlane, FaEdit, FaTimes } from "react-icons/fa";
 
 interface ConversationWindowProps {
@@ -16,7 +17,7 @@ interface ConversationWindowProps {
   initialMessages?: Message[];
 }
 
-const ConversationWindow: React.FC<ConversationWindowProps> = (props: ConversationWindowProps) => {
+const ConversationWindow: React.FC<ConversationWindowProps> = (props) => {
   const messageService = new MessageService();
   const { token } = useAuth();
   const [messages, setMessages] = useState<Message[]>(props.initialMessages ?? []);
@@ -25,6 +26,7 @@ const ConversationWindow: React.FC<ConversationWindowProps> = (props: Conversati
   const [existingAttachments, setExistingAttachments] = useState<string[]>([]);
   const [editingMessage, setEditingMessage] = useState<Message | null>(null);
   const [fileInputKey, setFileInputKey] = useState(0);
+  const [messageToDelete, setMessageToDelete] = useState<Message | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   const other = props.conversation.type === ConversationType.DIRECT ? props.conversation.participants.find((p) => p.id !== props.user.id) : null;
@@ -37,11 +39,13 @@ const ConversationWindow: React.FC<ConversationWindowProps> = (props: Conversati
     setEditingMessage(null);
 
     const unsubscribeSent = messageService.subscribeToMessageSent(props.conversation.id, (message) => setMessages((prev) => [...prev, message]));
-    const unsubscribeUpdated = messageService.subscribeToMessageUpdated(props.conversation.id, (updatedMessage) => setMessages((prev) => prev.map((message) => (message.id === updatedMessage.id ? { ...updatedMessage, isUpdated: true } : message))));
+    const unsubscribeUpdated = messageService.subscribeToMessageUpdated(props.conversation.id, (updatedMessage) => setMessages((prev) => prev.map((message) => message.id === updatedMessage.id ? { ...updatedMessage, isUpdated: true } : message)));
+    const unsubscribeDeleted = messageService.subscribeToMessageDeleted(props.conversation.id, (deletedId) => setMessages((prev) => prev.map((message) => message.id === deletedId ? { ...message, isDeleted: true, content: "This message have been deleted", attachmentsUrls: [] } : message)));    
 
     return () => {
       unsubscribeSent();
       unsubscribeUpdated();
+      unsubscribeDeleted();
     };
   }, [props.conversation.id, props.initialMessages]);
 
@@ -62,10 +66,10 @@ const ConversationWindow: React.FC<ConversationWindowProps> = (props: Conversati
         const file = new File([blob], cleanName, {
           type: blob.type || "application/octet-stream",
         });
-
+        
         finalFiles.push(file);
       }
-      catch (err) {
+      catch {
         toast.error("An error occurred with an attachment of a message.");
       }
     }
@@ -83,7 +87,7 @@ const ConversationWindow: React.FC<ConversationWindowProps> = (props: Conversati
       if (editingMessage) {
         const filesToSend = await combineAllFiles();
         const updated = await messageService.editMessage(editingMessage.id, inputValue, token!, filesToSend);
-        setMessages((prev) => prev.map((message) => (message.id === updated.id ? { ...updated, isUpdated: true } : message)));
+        setMessages((prev) => prev.map((message) => message.id === updated.id ? { ...updated, isUpdated: true } : message));
         toast.success("Message updated.");
         setEditingMessage(null);
       }
@@ -96,7 +100,7 @@ const ConversationWindow: React.FC<ConversationWindowProps> = (props: Conversati
       setExistingAttachments([]);
       setFileInputKey((key) => key + 1);
     }
-    catch (err) {
+    catch {
       toast.error("Failed to send message.");
     }
   }
@@ -117,8 +121,31 @@ const ConversationWindow: React.FC<ConversationWindowProps> = (props: Conversati
     setFileInputKey((key) => key + 1);
   }
 
+  const handleDelete = (message: Message) => {
+    setMessageToDelete(message);
+  }
+
+  const confirmDelete = async () => {
+    if (!messageToDelete) {
+      return;
+    }
+
+    try {
+      await messageService.deleteMessage(messageToDelete.id, token!);
+      setMessageToDelete(null);
+      toast.success("Message deleted.");
+    }
+    catch {
+      toast.error("Failed to delete message.");
+    }
+  }
+
+  const cancelDelete = () => {
+    setMessageToDelete(null);
+  }
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files ? Array.from(e.target.files) : [];
+    const files: File[] = e.target.files ? Array.from(e.target.files) : [];
     if (files.length > 0) {
       setAttachedFiles((prev) => [...prev, ...files]);
       setFileInputKey((key) => key + 1);
@@ -149,7 +176,7 @@ const ConversationWindow: React.FC<ConversationWindowProps> = (props: Conversati
           </div>
         ) : (
           messages.map((message) => (
-            <MessageBubble key={message.id} message={message} isSender={message.sender.id === props.user.id} onEdit={handleEdit} />
+            <MessageBubble key={message.id} message={message} isSender={message.sender.id === props.user.id} onEdit={handleEdit} onDelete={handleDelete} />
           ))
         )}
         <div ref={messagesEndRef} />
@@ -176,7 +203,7 @@ const ConversationWindow: React.FC<ConversationWindowProps> = (props: Conversati
           <label htmlFor="file-upload" className="flex items-center justify-center w-9 h-9 rounded-full bg-[#9b8af7]/20 hover:bg-[#9b8af7]/30 transition cursor-pointer">
             <FaPaperclip className="text-[#9b8af7] text-lg" />
           </label>
-          <button onClick={handleSend} className={`flex items-center justify-center w-9 h-9 rounded-full ${ editingMessage ? "bg-yellow-500 hover:bg-yellow-400" : "bg-[#9b8af7] hover:bg-[#7f72db]" } transition cursor-pointer`}>
+          <button onClick={handleSend} className={`flex items-center justify-center w-9 h-9 rounded-full ${editingMessage ? "bg-yellow-500 hover:bg-yellow-400" : "bg-[#9b8af7] hover:bg-[#7f72db]"} transition cursor-pointer`}>
             {editingMessage ? (
               <FaEdit className="text-white text-sm" />
             ) : (
@@ -185,6 +212,7 @@ const ConversationWindow: React.FC<ConversationWindowProps> = (props: Conversati
           </button>
         </div>
       </div>
+      <DeleteConfirmationModal isOpen={!!messageToDelete} onConfirm={confirmDelete} onCancel={cancelDelete} />
     </div>
   );
 }

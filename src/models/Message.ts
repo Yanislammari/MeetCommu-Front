@@ -6,6 +6,7 @@ export interface Message {
   attachmentsUrls?: string[];
   sender: User;
   isUpdated?: boolean;
+  isDeleted?: boolean;
   createdAt: Date
   updatedAt: Date
 }

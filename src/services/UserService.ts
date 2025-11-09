@@ -1,5 +1,5 @@
 import type { User } from "../models/User";
-import GraphQLService from "./graphql.service";
+import GraphQLService from "./GraphQLService";
 
 class UserService extends GraphQLService {
   public async getUserById(id: string): Promise<User> {

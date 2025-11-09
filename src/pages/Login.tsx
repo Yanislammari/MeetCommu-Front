@@ -2,7 +2,7 @@ import type React from "react";
 import { useState } from "react";
 import backgroundImage from "./../assets/background.png";
 import { toast } from "sonner";
-import AuthService from "../services/auth.service";
+import AuthService from "../services/AuthService";
 import { useNavigate, type NavigateFunction } from "react-router";
 import { useAuth } from "../providers/AuthProvider";
 

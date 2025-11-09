@@ -1,5 +1,5 @@
 import type { User } from "../models/User";
-import GraphQLService from "./graphql.service";
+import GraphQLService from "./GraphQLService";
 
 class AuthService extends GraphQLService {
   public async login(identifier: string, password: string): Promise<string> {

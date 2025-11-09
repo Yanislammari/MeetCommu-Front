@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import ConversationType from "../models/ConversationType";
 import type { Message } from "../models/Message";
 import { useAuth } from "../providers/AuthProvider";
-import ConversationService from "../services/conversation.service";
+import ConversationService from "../services/ConversationService";
 import { toast } from "sonner";
 import ConversationItem from "./ConversationItem";
 import type { User } from "../models/User";

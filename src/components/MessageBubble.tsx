@@ -7,6 +7,7 @@ interface MessageBubbleProps {
   message: Message;
   isSender: boolean;
   onEdit?: (message: Message) => void;
+  onDelete?: (message: Message) => void;
 }
 
 const MessageBubble: React.FC<MessageBubbleProps> = (props: MessageBubbleProps) => {
@@ -29,7 +30,11 @@ const MessageBubble: React.FC<MessageBubbleProps> = (props: MessageBubbleProps) 
           </div>
         )}
         <div className={`px-4 py-2 text-sm rounded-2xl break-words ${ props.isSender ? "bg-[#9b8af7] text-white" : "bg-[#1e1e2f] text-gray-200" }`}>
-          <p>{props.message.content}</p>
+          {props.message.isDeleted ? (
+            <p className="italic text-red-600">This message have been deleted</p>
+          ) : (
+            <p>{props.message.content}</p>
+          )}
         </div>
         {!props.isSender && (
           <div className="flex flex-col items-start">
@@ -40,18 +45,18 @@ const MessageBubble: React.FC<MessageBubbleProps> = (props: MessageBubbleProps) 
           </div>
         )}
       </div>
-      {props.message.attachmentsUrls && props.message.attachmentsUrls.length > 0 && (
+      {!props.message.isDeleted && props.message.attachmentsUrls && props.message.attachmentsUrls.length > 0 && (
         <div className={`mt-2 grid gap-3 ${ props.message.attachmentsUrls.length > 1 ? "grid-cols-2" : "grid-cols-1" }`}>
           {props.message.attachmentsUrls.map((url) => (
             <FilePreview key={url} url={url} />
           ))}
         </div>
       )}
-      {showActions && (
-        <div className={`absolute ${ props.isSender ? "right-0" : "left-0" } flex items-center gap-2 bg-[#1e1e2f]/90 border border-white/10 rounded-full px-3 py-1.5 shadow-md backdrop-blur-md transition-all duration-200 ease-out translate-y-full mt-1 z-99`}>
+      {showActions && !props.message.isDeleted && (
+        <div className={`absolute ${ props.isSender ? "right-0" : "left-0" } flex items-center gap-2 bg-[#1e1e2f]/90 border border-white/10 rounded-full px-3 py-1.5 shadow-md backdrop-blur-md transition-all duration-200 ease-out translate-y-full mt-1 z-[99]`}>
           {props.isSender ? (
             <React.Fragment>
-              <button onClick={() => {}} title="Delete the message" className="text-gray-400 hover:text-red-400 transition cursor-pointer">
+              <button onClick={() => props.onDelete?.(props.message)} title="Delete the message" className="text-gray-400 hover:text-red-400 transition cursor-pointer">
                 <FaTrash size={13} />
               </button>
               <button onClick={() => props.onEdit?.(props.message)} title="Edit the message" className="text-gray-400 hover:text-yellow-400 transition cursor-pointer">

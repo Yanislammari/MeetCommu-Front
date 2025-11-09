@@ -3,7 +3,7 @@ import { useNavigate, type NavigateFunction } from "react-router";
 import backgroundImage from "./../assets/background.png";
 import { GoogleLogin, type CredentialResponse } from "@react-oauth/google";
 import { toast } from "sonner";
-import AuthService from "../services/auth.service";
+import AuthService from "../services/AuthService";
 import { useAuth } from "../providers/AuthProvider";
 
 const Main: React.FC = () => {

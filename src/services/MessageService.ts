@@ -1,5 +1,5 @@
 import type { Message } from "../models/Message";
-import GraphQLService from "./graphql.service";
+import GraphQLService from "./GraphQLService";
 import { createClient } from "graphql-ws";
 import type { Client } from "graphql-ws";
 
@@ -9,6 +9,10 @@ interface MessageSentSubscriptionPayload {
 
 interface MessageUpdatedSubscriptionPayload {
   messageUpdated: Message;
+}
+
+interface MessageDeletedSubscriptionPayload {
+  messageDeleted: string;
 }
 
 class MessageService extends GraphQLService {
@@ -48,6 +52,7 @@ class MessageService extends GraphQLService {
           content
           attachmentsUrls
           isUpdated
+          isDeleted
           createdAt
           updatedAt
 
@@ -78,6 +83,7 @@ class MessageService extends GraphQLService {
           content
           attachmentsUrls
           isUpdated
+          isDeleted
           createdAt
           updatedAt
 
@@ -137,6 +143,7 @@ class MessageService extends GraphQLService {
           content
           attachmentsUrls
           isUpdated
+          isDeleted
           createdAt
           updatedAt
 
@@ -188,6 +195,21 @@ class MessageService extends GraphQLService {
     return response.updateMessage;
   }
 
+  public async deleteMessage(id: string, token: string): Promise<boolean> {
+    const query: string = `
+      mutation DeleteMessage($id: ID!) {
+        deleteMessage(id: $id)
+      }
+    `;
+
+    const variables = {
+      id
+    }
+
+    const response = await this.request<{deleteMessage: boolean}>(query, variables, token);
+    return response.deleteMessage;
+  }
+
   public subscribeToMessageSent(conversationId: string, onMessage: (msg: Message) => void): () => void {
     const dispose = this.wsClient.subscribe<MessageSentSubscriptionPayload>({
       query: `
@@ -196,6 +218,8 @@ class MessageService extends GraphQLService {
             id
             content
             attachmentsUrls
+            isUpdated
+            isDeleted
             createdAt
             
             sender {
@@ -231,6 +255,8 @@ class MessageService extends GraphQLService {
             id
             content
             attachmentsUrls
+            isUpdated
+            isDeleted
             createdAt
 
             sender {
@@ -256,6 +282,28 @@ class MessageService extends GraphQLService {
     return () => {
       dispose();
     }
+  }
+
+  public subscribeToMessageDeleted(conversationId: string, onDelete: (deletedId: string) => void): () => void {
+    const dispose = this.wsClient.subscribe<MessageDeletedSubscriptionPayload>({
+      query: `
+        subscription MessageDeleted($conversationId: ID!) {
+          messageDeleted(conversationId: $conversationId)
+        }
+      `,
+      variables: { conversationId },
+    }, {
+      next: (payload) => {
+        const deletedId = payload.data?.messageDeleted;
+        if (deletedId) onDelete(deletedId);
+      },
+      error: (err) => console.error("Subscription error:", err),
+      complete: () => console.log("Subscription completed"),
+    });
+  
+    return () => {
+      dispose();
+    };
   }
 }
 

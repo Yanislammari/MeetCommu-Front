@@ -9,11 +9,11 @@ interface FilePreviewProps {
   onRemove?: () => void;
 }
 
-const FilePreview: React.FC<FilePreviewProps> = ({ file, url, isInputPreview, onRemove }) => {
+const FilePreview: React.FC<FilePreviewProps> = (props: FilePreviewProps) => {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
-  const source: string = file ? URL.createObjectURL(file) : url!;
-  const filename: string = file?.name || (url ? url.split("/").pop()?.replace(/^[0-9]+-/, "") : "unknown") || "unknown";
+  const source: string = props.file ? URL.createObjectURL(props.file) : props.url!;
+  const filename: string = props.file?.name || (props.url ? props.url.split("/").pop()?.replace(/^[0-9]+-/, "") : "unknown") || "unknown";
   const extension: string = filename.split(".").pop()?.toLowerCase() ?? "";
   const isImage: boolean = ["jpg", "jpeg", "png", "gif", "webp"].includes(extension);
   const isVideo: boolean = ["mp4", "mov", "webm"].includes(extension);
@@ -26,7 +26,7 @@ const FilePreview: React.FC<FilePreviewProps> = ({ file, url, isInputPreview, on
   }
 
   const handleClick = () => {
-    if (isInputPreview) {
+    if (props.isInputPreview) {
       return;
     }
 
@@ -45,12 +45,12 @@ const FilePreview: React.FC<FilePreviewProps> = ({ file, url, isInputPreview, on
 
   const handleMediaClose = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     e.stopPropagation();
-    onRemove?.();
+    props.onRemove?.();
   }
 
   return (
     <React.Fragment>
-      <div onClick={handleClick} className={`relative flex-shrink-0 transition-transform border border-white/10 rounded-lg shadow-sm cursor-pointer overflow-hidden ${ isImage ? "w-40 h-40" : isVideo ? "w-60 h-40" : "w-40 flex flex-col bg-[#26263d]" } ${!isInputPreview ? "hover:scale-[1.02]" : ""} ${ !isImage && !isVideo ? "hover:bg-[#2f2f47]" : "" }`}>
+      <div onClick={handleClick} className={`relative flex-shrink-0 transition-transform border border-white/10 rounded-lg shadow-sm cursor-pointer overflow-hidden ${ isImage ? "w-40 h-40" : isVideo ? "w-60 h-40" : "w-40 flex flex-col bg-[#26263d]" } ${!props.isInputPreview ? "hover:scale-[1.02]" : ""} ${ !isImage && !isVideo ? "hover:bg-[#2f2f47]" : "" }`}>
         {isImage ? (
           <img src={source} alt={filename} className="w-full h-full object-cover" />
         ) : isVideo ? (
@@ -67,7 +67,7 @@ const FilePreview: React.FC<FilePreviewProps> = ({ file, url, isInputPreview, on
             </div>
           </React.Fragment>
         )}
-        {isInputPreview && (
+        {props.isInputPreview && (
           <button onClick={(e) => handleMediaClose(e)} className="absolute top-1 right-1 bg-black/60 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-black/80 cursor-pointer transition">
             <FaTimes className="text-xs" />
           </button>

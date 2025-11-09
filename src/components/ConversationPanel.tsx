@@ -21,12 +21,12 @@ const ConversationPanel: React.FC<ConversationPanelProps> = (props: Conversation
   const [lastMessages, setLastMessages] = useState<Record<string, Message>>({});
 
   const getOtherUserOfConversation = (conversation: Conversation): User | undefined => {
-    if (conversation.type !== ConversationType.DIRECT){
+    if (conversation.type !== ConversationType.DIRECT) {
       return undefined;
     }
 
     return conversation.participants.find((p) => p.id !== user?.id);
-  };
+  }
 
   const getLastMessageOfConversation = async (conversation: Conversation) => {
     try {
@@ -36,7 +36,7 @@ const ConversationPanel: React.FC<ConversationPanelProps> = (props: Conversation
     catch {
       toast.error("Error fetching last messages.");
     }
-  };
+  }
 
   useEffect(() => {
     props.conversations.forEach((conversation) => getLastMessageOfConversation(conversation));

@@ -16,7 +16,7 @@ interface ConversationWindowProps {
   initialMessages?: Message[];
 }
 
-const ConversationWindow: React.FC<ConversationWindowProps> = (props) => {
+const ConversationWindow: React.FC<ConversationWindowProps> = (props: ConversationWindowProps) => {
   const messageService = new MessageService();
   const { token } = useAuth();
 

@@ -78,6 +78,42 @@ const ConversationWindow: React.FC<ConversationWindowProps> = (props) => {
     return finalFiles;
   }
 
+  const handlePaste = async (e: React.ClipboardEvent<HTMLInputElement>) => {
+    const items: DataTransferItemList = e.clipboardData?.items;
+    if (!items) {
+      return;
+    }
+  
+    const pastedFiles: File[] = [];
+    let shouldPreventDefault: boolean = false;
+  
+    for (const item of items) {
+      if (item.kind === "file") {
+        const file: File | null = item.getAsFile();
+        if (file) {
+          pastedFiles.push(file);
+          shouldPreventDefault = true;
+        }
+      }
+      else if (item.type.startsWith("image/")) {
+        const blob: File | null = item.getAsFile();
+        if (blob) {
+          const file = new File([blob], `pasted-image-${Date.now()}.png`, { type: blob.type });
+          pastedFiles.push(file);
+          shouldPreventDefault = true;
+        }
+      }
+    }
+  
+    if (shouldPreventDefault) {
+      e.preventDefault();
+    }
+  
+    if (pastedFiles.length > 0) {
+      setAttachedFiles((prev) => [...prev, ...pastedFiles]);
+    }
+  }
+
   const handleSend = async () => {
     if (!inputValue.trim() && attachedFiles.length === 0 && existingAttachments.length === 0) {
       return;
@@ -193,7 +229,7 @@ const ConversationWindow: React.FC<ConversationWindowProps> = (props) => {
           </div>
         )}
         <div className="flex items-center gap-3">
-          <input type="text" placeholder={editingMessage ? "Edit your message..." : "Write message..."} value={inputValue} onKeyDown={(e) => e.key === "Enter" && handleSend()} onChange={(e) => setInputValue(e.target.value)} className="flex-1 bg-[#1e1e2f] border border-white/10 rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#9b8af7] focus:outline-none text-sm text-gray-200 placeholder-gray-500" />
+          <input type="text" placeholder={editingMessage ? "Edit your message..." : "Write message..."} value={inputValue} onKeyDown={(e) => e.key === "Enter" && handleSend()} onChange={(e) => setInputValue(e.target.value)} onPaste={handlePaste} className="flex-1 bg-[#1e1e2f] border border-white/10 rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#9b8af7] focus:outline-none text-sm text-gray-200 placeholder-gray-500" />
           {editingMessage && (
             <button onClick={handleCancelEdit} title="Cancel the edit" className="flex items-center justify-center w-9 h-9 rounded-full bg-red-500/20 hover:bg-red-500/40 transition cursor-pointer">
               <FaTimes className="text-red-400 text-lg" />

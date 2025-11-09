@@ -7,6 +7,7 @@ import { useAuth } from "../providers/AuthProvider";
 import ConversationService from "../services/conversation.service";
 import { toast } from "sonner";
 import ConversationItem from "./ConversationItem";
+import type { User } from "../models/User";
 
 interface ConversationPanelProps {
   conversations: Conversation[];
@@ -19,7 +20,7 @@ const ConversationPanel: React.FC<ConversationPanelProps> = (props: Conversation
   const conversationService = new ConversationService();
   const [lastMessages, setLastMessages] = useState<Record<string, Message>>({});
 
-  const getOtherUserOfConversation = (conversation: Conversation) => {
+  const getOtherUserOfConversation = (conversation: Conversation): User | undefined => {
     if (conversation.type !== ConversationType.DIRECT){
       return undefined;
     }
@@ -49,18 +50,11 @@ const ConversationPanel: React.FC<ConversationPanelProps> = (props: Conversation
 
       <div className="flex-1 overflow-y-auto">
         {props.conversations.map((conversation) => {
-          const otherUser = getOtherUserOfConversation(conversation);
-          const lastMessage = lastMessages[conversation.id];
+          const otherUser: User | undefined = getOtherUserOfConversation(conversation);
+          const lastMessage: Message = lastMessages[conversation.id];
 
           return (
-            <ConversationItem
-              key={conversation.id}
-              conversation={conversation}
-              otherUser={otherUser}
-              lastMessage={lastMessage}
-              isSelected={props.selectedConversation?.id === conversation.id}
-              onSelect={() => props.onSelectConversation(conversation)}
-            />
+            <ConversationItem key={conversation.id} conversation={conversation} otherUser={otherUser} lastMessage={lastMessage} isSelected={props.selectedConversation?.id === conversation.id} onSelect={() => props.onSelectConversation(conversation)} />
           );
         })}
       </div>

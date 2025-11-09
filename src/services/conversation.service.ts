@@ -9,10 +9,11 @@ class ConversationService extends GraphQLService {
         lastMessageOfConversation(conversationId: $conversationId) {
           id
           content
-          attachementsUrls
+          attachmentsUrls
           isUpdated
           createdAt
           updatedAt
+
           sender {
             id
             firstName
@@ -24,7 +25,9 @@ class ConversationService extends GraphQLService {
       }
     `;
   
-    const variables = { conversationId };
+    const variables = {
+      conversationId
+    }
   
     const response = await this.request<{ lastMessageOfConversation: Message }>(query, variables);
     return response.lastMessageOfConversation;
@@ -53,10 +56,11 @@ class ConversationService extends GraphQLService {
           messages {
             id
             content
-            attachementsUrls
+            attachmentsUrls
             isUpdated
             createdAt
             updatedAt
+
             sender {
               id
               firstName
@@ -68,7 +72,9 @@ class ConversationService extends GraphQLService {
       }
     `;
   
-    const variables = { userId };
+    const variables = {
+      userId
+    }
   
     const response = await this.request<{ conversationsOfUser: Conversation[] }>(query, variables);
     return response.conversationsOfUser;

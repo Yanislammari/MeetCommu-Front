@@ -24,15 +24,15 @@ const ConversationItem: React.FC<ConversationItemProps> = (props: ConversationIt
       {props.conversation.type === ConversationType.DIRECT && props.otherUser ? (
         <UserAvatar user={props.otherUser} size={Size.MD} />
       ) : props.conversation.pictureUrl ? (
-        <img src={props.conversation.pictureUrl} alt={displayName ?? "?"} className="w-10 h-10 rounded-full object-cover"/>
+        <img src={props.conversation.pictureUrl} alt={displayName ?? "?"} className="w-10 h-10 rounded-full object-cover" />
       ) : (
         <div className="w-10 h-10 rounded-full bg-[#2a2a3d] flex items-center justify-center text-[#9b8af7] font-semibold">
           <p>{displayName ? displayName.charAt(0).toUpperCase() : "?"}</p>
         </div>
       )}
-      <div className="flex-1">
+      <div className="flex-1 min-w-0">
         <p className="font-medium text-gray-100">{displayName ?? "Unknown"}</p>
-        <p className="text-sm text-gray-400 truncate">{props.lastMessage?.content ?? "No messages yet"}</p>
+        <p className="text-sm text-gray-400 truncate overflow-hidden text-ellipsis whitespace-nowrap" title={props.lastMessage?.content ?? ""}>{props.lastMessage?.content ?? "No messages yet"}</p>
       </div>
       <span className="text-xs text-gray-500 whitespace-nowrap">{timestamp}</span>
     </div>

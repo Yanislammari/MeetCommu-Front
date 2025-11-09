@@ -42,7 +42,7 @@ class MessageService extends GraphQLService {
         messagesOfConversation(conversationId: $conversationId) {
           id
           content
-          attachementsUrls
+          attachmentsUrls
           isUpdated
           createdAt
           updatedAt
@@ -66,13 +66,13 @@ class MessageService extends GraphQLService {
     return response.messagesOfConversation;
   }
 
-  public async sendMessage(conversationId: string, content: string, token: string, attachements?: File[]): Promise<Message> {
+  public async sendMessage(conversationId: string, content: string, token: string, attachments?: File[]): Promise<Message> {
     const mutation: string = `
       mutation SendMessage($conversationId: ID!, $input: CreateMessageInput!, $files: [Upload!]) {
         sendMessage(conversationId: $conversationId, input: $input, files: $files) {
           id
           content
-          attachementsUrls
+          attachmentsUrls
           isUpdated
           createdAt
           updatedAt
@@ -93,7 +93,7 @@ class MessageService extends GraphQLService {
       input: {
         content
       },
-      files: attachements ? new Array(attachements.length).fill(null) : undefined
+      files: attachments ? new Array(attachments.length).fill(null) : undefined
     }
 
     const formData: FormData = new FormData();
@@ -105,15 +105,15 @@ class MessageService extends GraphQLService {
       })
     );
 
-    if (attachements && attachements.length > 0) {
+    if (attachments && attachments.length > 0) {
       const map: Record<string, string[]> = {};
-      attachements.forEach((_, index) => {
+      attachments.forEach((_, index) => {
         map[`${index}`] = [`variables.files.${index}`];
       });
 
       formData.append("map", JSON.stringify(map));
 
-      attachements.forEach((file, index) => {
+      attachments.forEach((file, index) => {
         formData.append(`${index}`, file);
       });
     }
@@ -132,7 +132,7 @@ class MessageService extends GraphQLService {
           messageSent(conversationId: $conversationId) {
             id
             content
-            attachementsUrls
+            attachmentsUrls
             createdAt
             sender {
               id
